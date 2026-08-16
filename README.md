@@ -31,11 +31,9 @@ python -m http.server 8000
 
 ## 배포 (GitHub Pages)
 
-이 저장소는 이미 GitHub Pages로 배포되어 있습니다.
-
-- 주소: **https://tmddn1572.github.io/-1/**
-- 배포 설정: 저장소 Settings → Pages → Source = `main` 브랜치 / `/ (root)`
-- `main` 브랜치에 푸시하면 자동으로 재배포됩니다.
+1. 저장소 Settings → Pages → Source에서 `main` 브랜치 / `/ (root)`를 선택하고 저장합니다. (최초 1회만 설정)
+2. 잠시 후 **https://tmddn1572.github.io/-1/** 로 접속되면 배포 완료입니다.
+3. 이후에는 `main` 브랜치에 푸시할 때마다 자동으로 재배포됩니다.
 
 `manifest.json`의 `start_url`/`scope`가 상대경로(`./`)로 되어 있어 저장소 이름이 무엇이든(서브경로 배포) 그대로 동작합니다.
 
