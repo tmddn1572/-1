@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>설정 - 나의 기록장</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#3b5bfd" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="나의 기록장" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="no-tabbar">
+  <header class="appbar">
+    <div class="appbar-left">
+      <a href="index.html" class="appbar-action" aria-label="뒤로">←</a>
+      <span class="appbar-title">설정</span>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <section class="settings-section">
+      <h3>비밀번호</h3>
+      <div class="settings-card" id="password-card"></div>
+      <p class="settings-note">투자 기록과 일기는 같은 비밀번호를 공유해요. 완전한 보안이 아닌 간단한 잠금 기능이니 민감한 정보는 다른 수단으로도 보호하세요.</p>
+    </section>
+
+    <section class="settings-section">
+      <h3>데이터 백업</h3>
+      <div class="settings-card">
+        <button type="button" class="settings-row" id="export-btn">
+          <span>백업 파일 내보내기<div class="settings-row-desc">일정 · 투자 기록 · 일기를 JSON 파일로 저장</div></span>
+          <span>›</span>
+        </button>
+        <button type="button" class="settings-row" id="import-btn">
+          <span>백업 파일 가져오기<div class="settings-row-desc">내보낸 JSON 파일로 데이터를 복원 (기존 데이터 덮어씀)</div></span>
+          <span>›</span>
+        </button>
+      </div>
+      <input type="file" id="import-file" accept="application/json" hidden />
+      <p class="settings-note">이 앱은 서버 없이 기기(브라우저) 안에만 데이터를 저장해요. 기기를 바꾸거나 브라우저 데이터가 삭제되면 기록이 사라질 수 있으니 주기적으로 백업하는 걸 권장해요.</p>
+    </section>
+
+    <section class="settings-section">
+      <h3>정보</h3>
+      <div class="settings-card">
+        <div class="settings-row"><span>나의 기록장</span><span style="color:var(--text-tertiary)">v1.0</span></div>
+        <div class="settings-row"><span>저장 방식</span><span style="color:var(--text-tertiary)">브라우저 로컬 저장 (IndexedDB)</span></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 비밀번호 설정/변경 모달 -->
+  <div class="modal-overlay" id="pw-modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2 id="pw-modal-title">비밀번호 설정</h2>
+        <button class="modal-close" id="pw-modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="pw-form">
+          <div class="field hidden" id="current-pw-field">
+            <label for="pw-current">현재 비밀번호</label>
+            <input type="password" id="pw-current" autocomplete="current-password" />
+          </div>
+          <div class="field">
+            <label for="pw-new1">새 비밀번호</label>
+            <input type="password" id="pw-new1" required minlength="4" autocomplete="new-password" />
+          </div>
+          <div class="field">
+            <label for="pw-new2">새 비밀번호 확인</label>
+            <input type="password" id="pw-new2" required minlength="4" autocomplete="new-password" />
+          </div>
+          <p class="lock-error hidden" id="pw-error"></p>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" form="pw-form" class="btn btn-primary btn-block">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/pwa.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>투자 기록 - 나의 기록장</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#3b5bfd" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="나의 기록장" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="lock-gate"></div>
+
+  <div id="app-content" hidden>
+    <header class="appbar">
+      <span class="appbar-title">투자 기록</span>
+      <div class="appbar-left">
+        <button class="appbar-action" id="lock-btn" aria-label="잠그기">🔓</button>
+        <a href="settings.html" class="appbar-action" aria-label="설정">⚙️</a>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="toolbar">
+        <input type="search" id="search-input" placeholder="종목/자산명 검색" />
+        <div class="filter-scroll" id="tag-filter"></div>
+      </div>
+      <div class="list" id="record-list"></div>
+    </main>
+
+    <button class="fab" id="add-btn" aria-label="기록 추가">+</button>
+
+    <nav class="tabbar" aria-label="주요 메뉴">
+      <a href="index.html" class="tab-item"><span class="tab-icon">🏠</span><span class="tab-label">홈</span></a>
+      <a href="schedule.html" class="tab-item"><span class="tab-icon">📅</span><span class="tab-label">일정</span></a>
+      <a href="investment.html" class="tab-item active"><span class="tab-icon">💹</span><span class="tab-label">투자</span></a>
+      <a href="diary.html" class="tab-item"><span class="tab-icon">📔</span><span class="tab-label">일기</span></a>
+    </nav>
+
+    <!-- 기록 등록/수정 모달 -->
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+          <h2 id="modal-title">투자 기록 추가</h2>
+          <button class="modal-close" id="modal-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <form id="record-form">
+            <input type="hidden" id="f-id" />
+            <div class="field">
+              <label for="f-datetime">일시</label>
+              <input type="datetime-local" id="f-datetime" required />
+            </div>
+            <div class="field">
+              <label for="f-symbol">종목 / 자산명</label>
+              <input type="text" id="f-symbol" required placeholder="예: 삼성전자, 비트코인" />
+            </div>
+            <div class="field">
+              <label for="f-action">판단 내용</label>
+              <textarea id="f-action" required placeholder="예: 매수, 매도, 관망 등 자유롭게"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-rationale">근거</label>
+              <textarea id="f-rationale" placeholder="이렇게 판단한 이유"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-expectation">예상 (선택)</label>
+              <textarea id="f-expectation" placeholder="앞으로 어떻게 될 것 같은지"></textarea>
+            </div>
+            <div class="field">
+              <label>감정 태그 (다중 선택)</label>
+              <div class="chip-group" id="emotion-group">
+                <button type="button" class="chip" data-value="불안">불안</button>
+                <button type="button" class="chip" data-value="확신">확신</button>
+                <button type="button" class="chip" data-value="조급함">조급함</button>
+                <button type="button" class="chip" data-value="무덤덤">무덤덤</button>
+                <button type="button" class="chip" data-value="흥분">흥분</button>
+                <button type="button" class="chip" data-value="후회">후회</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>확신도</label>
+              <div class="confidence-picker" id="confidence-picker">
+                <span class="confidence-star" data-value="1">★</span>
+                <span class="confidence-star" data-value="2">★</span>
+                <span class="confidence-star" data-value="3">★</span>
+                <span class="confidence-star" data-value="4">★</span>
+                <span class="confidence-star" data-value="5">★</span>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:22px;">
+              <label>결과 (나중에 채워도 돼요)</label>
+              <div class="segmented" id="result-segmented">
+                <button type="button" data-value="">미정</button>
+                <button type="button" data-value="correct">맞음</button>
+                <button type="button" data-value="incorrect">틀림</button>
+                <button type="button" data-value="ambiguous">애매함</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-result-note">결과 메모</label>
+              <textarea id="f-result-note" placeholder="결과에 대한 메모 (선택)"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger hidden" id="delete-btn">삭제</button>
+          <button type="submit" form="record-form" class="btn btn-primary">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/investment.js"></script>
+  <script src="js/pwa.js"></script>
+</body>
+</html>

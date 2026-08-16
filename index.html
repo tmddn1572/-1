@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>나의 기록장</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#3b5bfd" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="나의 기록장" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="appbar">
+    <span class="appbar-title">나의 기록장</span>
+    <a href="settings.html" class="appbar-action" aria-label="설정">⚙️</a>
+  </header>
+
+  <main class="page-content">
+    <div class="home-hero">
+      <h1>안녕하세요 👋</h1>
+      <p>일정, 투자 판단, 일기를 한 곳에 기록하세요.</p>
+    </div>
+
+    <div class="home-menu">
+      <a href="schedule.html" class="home-card">
+        <div class="home-card-icon">📅</div>
+        <div class="home-card-body">
+          <div class="home-card-title">일정</div>
+          <div class="home-card-desc">월별 캘린더로 일정을 기록하고 확인해요</div>
+        </div>
+        <div class="home-card-chevron">›</div>
+      </a>
+
+      <a href="investment.html" class="home-card">
+        <div class="home-card-icon">💹</div>
+        <div class="home-card-body">
+          <div class="home-card-title">투자 기록 <span class="home-card-lock">🔒</span></div>
+          <div class="home-card-desc">매수/매도 판단과 근거, 감정을 남겨요</div>
+        </div>
+        <div class="home-card-chevron">›</div>
+      </a>
+
+      <a href="diary.html" class="home-card">
+        <div class="home-card-icon">📔</div>
+        <div class="home-card-body">
+          <div class="home-card-title">일기 <span class="home-card-lock">🔒</span></div>
+          <div class="home-card-desc">오늘 하루를 자유롭게 기록해요</div>
+        </div>
+        <div class="home-card-chevron">›</div>
+      </a>
+    </div>
+  </main>
+
+  <nav class="tabbar" aria-label="주요 메뉴">
+    <a href="index.html" class="tab-item active"><span class="tab-icon">🏠</span><span class="tab-label">홈</span></a>
+    <a href="schedule.html" class="tab-item"><span class="tab-icon">📅</span><span class="tab-label">일정</span></a>
+    <a href="investment.html" class="tab-item"><span class="tab-icon">💹</span><span class="tab-label">투자</span></a>
+    <a href="diary.html" class="tab-item"><span class="tab-icon">📔</span><span class="tab-label">일기</span></a>
+  </nav>
+
+  <script src="js/pwa.js"></script>
+</body>
+</html>
