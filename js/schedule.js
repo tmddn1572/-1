@@ -85,9 +85,12 @@
       if (weekday === 6) classes.push('sat');
       if (c.dateStr === todayStr) classes.push('today');
       if (c.dateStr === selectedDate) classes.push('selected');
+      const holidayName = holidayNameOn(c.dateStr);
+      if (holidayName) classes.push('holiday');
       const hasEvent = schedulesOn(c.dateStr).length > 0;
       return `<button type="button" class="${classes.join(' ')}" data-date="${c.dateStr}">
         <span class="cal-cell-num">${c.dayNum}</span>
+        ${holidayName ? `<span class="cal-holiday-label">${Utils.escapeHtml(holidayName)}</span>` : ''}
         ${hasEvent ? '<span class="cal-dot"></span>' : ''}
       </button>`;
     }).join('');
@@ -108,7 +111,10 @@
   }
 
   function renderDayPanel() {
-    dayPanelTitle.textContent = Utils.displayDate(selectedDate);
+    const holidayName = holidayNameOn(selectedDate);
+    dayPanelTitle.innerHTML = holidayName
+      ? `${Utils.escapeHtml(Utils.displayDate(selectedDate))} <span class="day-panel-holiday">🎌 ${Utils.escapeHtml(holidayName)}</span>`
+      : Utils.escapeHtml(Utils.displayDate(selectedDate));
     const items = schedulesOn(selectedDate);
     if (items.length === 0) {
       dayList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🗓️</div>이 날은 등록된 일정이 없어요.</div>`;

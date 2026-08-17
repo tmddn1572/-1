@@ -276,14 +276,22 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--primary); o
 .cal-cell.out { color: var(--text-tertiary); opacity: 0.4; }
 .cal-cell.sun { color: var(--danger); }
 .cal-cell.sat { color: var(--primary); }
+.cal-cell.holiday { color: var(--danger); }
 .cal-cell.today .cal-cell-num { background: var(--surface-2); border-radius: 50%; }
 .cal-cell.selected .cal-cell-num { background: var(--primary); color: #fff; border-radius: 50%; }
 .cal-cell-num { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
-.cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); position: absolute; bottom: 6px; }
+.cal-holiday-label {
+  font-size: 8.5px; font-weight: 700; line-height: 1.1;
+  color: var(--danger);
+  max-width: 90%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--primary); position: absolute; bottom: 4px; }
 .cal-cell.selected .cal-dot { background: #fff; }
 
 .day-panel { margin-top: 20px; }
 .day-panel-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.day-panel-holiday { color: var(--danger); font-weight: 700; font-size: 13px; margin-left: 4px; }
 
 /* ===== List cards ===== */
 .list { display: flex; flex-direction: column; gap: 10px; }
