@@ -23,6 +23,7 @@
   const checklistForm = document.getElementById('checklist-form');
   const checklistInput = document.getElementById('checklist-input');
   const checklistRepeatSelect = document.getElementById('checklist-repeat-select');
+  const checklistRepeatHint = document.getElementById('checklist-repeat-hint');
   const checklistList = document.getElementById('checklist-list');
   const dashTodayRatio = document.getElementById('dash-today-ratio');
   const dashTodayScore = document.getElementById('dash-today-score');
@@ -294,20 +295,36 @@
     renderDashboard();
   }
 
+  function updateChecklistRepeatHint() {
+    const value = checklistRepeatSelect.value;
+    if (value === 'none') {
+      checklistRepeatHint.hidden = true;
+      return;
+    }
+    const d = Utils.strToDate(selectedDate);
+    let msg = '🔁 매일 반복 항목으로 추가돼요.';
+    if (value === 'weekly') msg = `🔁 매주 ${Utils.WEEKDAYS_KR[d.getDay()]}요일마다 반복 항목으로 추가돼요.`;
+    else if (value === 'monthly') msg = `🔁 매달 ${d.getDate()}일마다 반복 항목으로 추가돼요.`;
+    checklistRepeatHint.textContent = msg;
+    checklistRepeatHint.hidden = false;
+  }
+  checklistRepeatSelect.addEventListener('change', updateChecklistRepeatHint);
+
   checklistForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const text = checklistInput.value.trim();
     if (!text) return;
     addChecklistItem(text, checklistRepeatSelect.value);
     checklistInput.value = '';
-    checklistRepeatSelect.value = 'none';
     checklistInput.focus();
+    // 반복 선택은 유지됩니다 (같은 요일에 여러 개를 이어서 등록하기 편하도록).
   });
 
   async function refreshDayChecklist() {
     await ensureRecurringInstances(selectedDate);
     renderChecklist();
     renderDashboard();
+    updateChecklistRepeatHint();
   }
 
   function setRepeatValue(value) {
