@@ -1,10 +1,14 @@
 (() => {
   const REPEAT_LABEL = { none: '', daily: '매일 반복', weekly: '매주 반복', monthly: '매월 반복' };
 
+  const POINTS_PER_ITEM = 10;
+
   let allSchedules = [];
+  let allChecklistItems = [];
   let viewYear, viewMonth; // viewMonth: 0-11
   let selectedDate = Utils.todayStr();
   let editingId = null;
+  let checklistRepeatOn = false;
 
   const monthLabel = document.getElementById('month-label');
   const calGrid = document.getElementById('cal-grid');
@@ -16,6 +20,16 @@
   const deleteBtn = document.getElementById('delete-btn');
   const repeatSeg = document.getElementById('repeat-segmented');
   const repeatHint = document.getElementById('repeat-hint');
+
+  const checklistForm = document.getElementById('checklist-form');
+  const checklistInput = document.getElementById('checklist-input');
+  const checklistRepeatToggle = document.getElementById('checklist-repeat-toggle');
+  const checklistList = document.getElementById('checklist-list');
+  const dashTodayRatio = document.getElementById('dash-today-ratio');
+  const dashTodayScore = document.getElementById('dash-today-score');
+  const dashTotalScore = document.getElementById('dash-total-score');
+  const dashPerfectDays = document.getElementById('dash-perfect-days');
+  const dashStreak = document.getElementById('dash-streak');
 
   function occursOn(schedule, dateStr) {
     if (dateStr < schedule.date) return false;
@@ -79,7 +93,7 @@
     }).join('');
 
     calGrid.querySelectorAll('.cal-cell').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         selectedDate = btn.dataset.date;
         const d = Utils.strToDate(selectedDate);
         if (d.getMonth() !== viewMonth || d.getFullYear() !== viewYear) {
@@ -88,6 +102,7 @@
         }
         renderCalendar();
         renderDayPanel();
+        await refreshDayChecklist();
       });
     });
   }
@@ -116,6 +131,185 @@
         if (s) openModal(s);
       });
     });
+  }
+
+  // ===== 체크리스트 (게이미피케이션) =====
+
+  async function loadChecklist() {
+    allChecklistItems = await DB.getAll('checklistItems');
+  }
+
+  // '매일 반복' 항목의 루트(템플릿)를 찾아 선택한 날짜에 아직 없다면 그 날짜용 인스턴스를 만들어준다.
+  async function ensureRecurringInstances(dateStr) {
+    const roots = allChecklistItems.filter((it) => it.repeatDaily && it.groupId === it.id);
+    let changed = false;
+    for (const root of roots) {
+      if (dateStr < root.date) continue;
+      const exists = allChecklistItems.some((it) => it.groupId === root.id && it.date === dateStr);
+      if (!exists) {
+        const clone = {
+          id: Utils.genId(),
+          date: dateStr,
+          text: root.text,
+          completed: false,
+          repeatDaily: true,
+          groupId: root.id,
+          createdAt: Date.now(),
+          completedAt: null,
+        };
+        await DB.put('checklistItems', clone);
+        allChecklistItems.push(clone);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  function checklistItemsOn(dateStr) {
+    return allChecklistItems
+      .filter((it) => it.date === dateStr)
+      .sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  function bump(el) {
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+  }
+
+  function buildDateStatsMap() {
+    const map = {};
+    allChecklistItems.forEach((it) => {
+      if (!map[it.date]) map[it.date] = { total: 0, completed: 0 };
+      map[it.date].total += 1;
+      if (it.completed) map[it.date].completed += 1;
+    });
+    return map;
+  }
+
+  function computeStreak(map) {
+    const today = Utils.todayStr();
+    let streak = 0;
+    const todayEntry = map[today];
+    if (todayEntry && todayEntry.total > 0 && todayEntry.completed === todayEntry.total) streak++;
+    const cursor = Utils.strToDate(today);
+    cursor.setDate(cursor.getDate() - 1);
+    while (true) {
+      const ds = Utils.dateToStr(cursor);
+      const entry = map[ds];
+      if (entry && entry.total > 0 && entry.completed === entry.total) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else break;
+    }
+    return streak;
+  }
+
+  function renderDashboard() {
+    const map = buildDateStatsMap();
+    const today = Utils.todayStr();
+    const todayEntry = map[today] || { total: 0, completed: 0 };
+    const totalCompleted = allChecklistItems.reduce((n, it) => n + (it.completed ? 1 : 0), 0);
+    const perfectDays = Object.values(map).filter((d) => d.total > 0 && d.completed === d.total).length;
+    const streak = computeStreak(map);
+
+    dashTodayRatio.textContent = `${todayEntry.completed}/${todayEntry.total}`;
+    dashTodayScore.textContent = `+${todayEntry.completed * POINTS_PER_ITEM}`;
+    dashTotalScore.textContent = `${totalCompleted * POINTS_PER_ITEM}`;
+    dashPerfectDays.textContent = `${perfectDays}일`;
+    dashStreak.textContent = `${streak}일`;
+  }
+
+  function renderChecklist() {
+    const items = checklistItemsOn(selectedDate);
+    if (items.length === 0) {
+      checklistList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div>아직 등록한 할 일이 없어요.</div>`;
+      return;
+    }
+    checklistList.innerHTML = items.map((it) => `
+      <div class="checklist-item ${it.completed ? 'completed' : ''}" data-id="${it.id}">
+        <input type="checkbox" class="checklist-checkbox" ${it.completed ? 'checked' : ''} aria-label="완료 체크" />
+        <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeatDaily ? '<span class="checklist-repeat-badge">🔁</span>' : ''}</div>
+        <button type="button" class="checklist-delete" aria-label="삭제">✕</button>
+      </div>
+    `).join('');
+
+    checklistList.querySelectorAll('.checklist-item').forEach((row) => {
+      const id = row.dataset.id;
+      row.querySelector('.checklist-checkbox').addEventListener('change', (e) => toggleChecklistItem(id, row, e.target.checked));
+      row.querySelector('.checklist-delete').addEventListener('click', () => deleteChecklistItem(id));
+    });
+  }
+
+  async function toggleChecklistItem(id, rowEl, checked) {
+    const item = allChecklistItems.find((it) => it.id === id);
+    if (!item) return;
+    item.completed = checked;
+    item.completedAt = checked ? Date.now() : null;
+    await DB.put('checklistItems', item);
+
+    rowEl.classList.toggle('completed', checked);
+    rowEl.classList.remove('pop');
+    void rowEl.offsetWidth;
+    rowEl.classList.add('pop');
+
+    const float = document.createElement('span');
+    float.className = `score-float ${checked ? 'gain' : 'loss'}`;
+    float.textContent = checked ? `+${POINTS_PER_ITEM}` : `-${POINTS_PER_ITEM}`;
+    rowEl.appendChild(float);
+    setTimeout(() => float.remove(), 800);
+
+    renderDashboard();
+    ['dash-today-ratio', 'dash-today-score', 'dash-total-score', 'dash-perfect-days', 'dash-streak']
+      .forEach((id2) => bump(document.getElementById(id2)));
+  }
+
+  async function addChecklistItem(text) {
+    const id = Utils.genId();
+    const repeatDaily = checklistRepeatOn;
+    const item = {
+      id,
+      date: selectedDate,
+      text,
+      completed: false,
+      repeatDaily,
+      groupId: repeatDaily ? id : null,
+      createdAt: Date.now(),
+      completedAt: null,
+    };
+    await DB.put('checklistItems', item);
+    allChecklistItems.push(item);
+    renderChecklist();
+    renderDashboard();
+  }
+
+  async function deleteChecklistItem(id) {
+    await DB.remove('checklistItems', id);
+    allChecklistItems = allChecklistItems.filter((it) => it.id !== id);
+    renderChecklist();
+    renderDashboard();
+  }
+
+  checklistForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = checklistInput.value.trim();
+    if (!text) return;
+    addChecklistItem(text);
+    checklistInput.value = '';
+    checklistRepeatOn = false;
+    checklistRepeatToggle.setAttribute('aria-pressed', 'false');
+    checklistInput.focus();
+  });
+
+  checklistRepeatToggle.addEventListener('click', () => {
+    checklistRepeatOn = !checklistRepeatOn;
+    checklistRepeatToggle.setAttribute('aria-pressed', String(checklistRepeatOn));
+  });
+
+  async function refreshDayChecklist() {
+    await ensureRecurringInstances(selectedDate);
+    renderChecklist();
+    renderDashboard();
   }
 
   function setRepeatValue(value) {
@@ -174,6 +368,7 @@
     viewMonth = d.getMonth();
     renderCalendar();
     renderDayPanel();
+    await refreshDayChecklist();
     closeModal();
     Utils.toast('저장했어요');
   });
@@ -199,13 +394,14 @@
     if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
     renderCalendar();
   });
-  document.getElementById('today-btn').addEventListener('click', () => {
+  document.getElementById('today-btn').addEventListener('click', async () => {
     const now = new Date();
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
     selectedDate = Utils.todayStr();
     renderCalendar();
     renderDayPanel();
+    await refreshDayChecklist();
   });
 
   (async function init() {
@@ -213,7 +409,9 @@
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
     await loadAll();
+    await loadChecklist();
     renderCalendar();
     renderDayPanel();
+    await refreshDayChecklist();
   })();
 })();

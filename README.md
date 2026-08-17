@@ -6,17 +6,17 @@
 ## 폴더 구조
 
 ```
-./
-├── index.html            # 홈 (3개 메뉴)
-├── schedule.html/js       # 일정 (월 캘린더)
-├── investment.html/js     # 투자 기록 (비밀번호 필요)
-├── diary.html/js          # 일기 (비밀번호 필요)
-├── settings.html/js       # 비밀번호 설정/변경, 데이터 백업
-├── manifest.json          # PWA manifest
-├── service-worker.js      # 오프라인 캐싱
+personal-tracker-pwa/
+├── index.html          # 홈 (3개 메뉴)
+├── schedule.html/js     # 일정 (월 캘린더)
+├── investment.html/js   # 투자 기록 (비밀번호 필요)
+├── diary.html/js        # 일기 (비밀번호 필요)
+├── settings.html/js     # 비밀번호 설정/변경, 데이터 백업
+├── manifest.json         # PWA manifest
+├── service-worker.js     # 오프라인 캐싱
 ├── css/style.css
 ├── js/{utils,db,auth,pwa}.js
-└── icons/                 # 홈 화면 아이콘 (PNG)
+└── icons/                # 홈 화면 아이콘 (PNG)
 ```
 
 ## 로컬에서 확인하기
@@ -24,16 +24,26 @@
 서비스 워커는 `file://`에서 등록되지 않으므로, 로컬 정적 서버로 열어야 합니다.
 
 ```bash
+cd personal-tracker-pwa
 python -m http.server 8000
 ```
 
 브라우저에서 `http://localhost:8000` 접속.
 
-## 배포 (GitHub Pages)
+## GitHub Pages에 배포하기
 
-1. 저장소 Settings → Pages → Source에서 `main` 브랜치 / `/ (root)`를 선택하고 저장합니다. (최초 1회만 설정)
-2. 잠시 후 **https://tmddn1572.github.io/-1/** 로 접속되면 배포 완료입니다.
-3. 이후에는 `main` 브랜치에 푸시할 때마다 자동으로 재배포됩니다.
+1. 이 폴더(`personal-tracker-pwa`)를 GitHub 저장소 루트로 두고 커밋/푸시합니다.
+   ```bash
+   cd personal-tracker-pwa
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/<사용자명>/<저장소명>.git
+   git push -u origin main
+   ```
+2. GitHub 저장소 → Settings → Pages → Source에서 `main` 브랜치 / `/ (root)` 선택 후 저장합니다.
+3. 잠시 후 `https://<사용자명>.github.io/<저장소명>/` 로 접속되면 배포 완료입니다.
 
 `manifest.json`의 `start_url`/`scope`가 상대경로(`./`)로 되어 있어 저장소 이름이 무엇이든(서브경로 배포) 그대로 동작합니다.
 
@@ -42,6 +52,13 @@ python -m http.server 8000
 1. Safari로 배포된 주소를 엽니다.
 2. 공유 버튼(⬆️) → "홈 화면에 추가" 선택.
 3. 홈 화면 아이콘으로 실행하면 주소창 없는 앱처럼(standalone) 동작합니다.
+
+## 일정 화면 게이미피케이션
+
+- 날짜를 선택하면 기존 일정 목록 아래에 "오늘의 할 일 체크리스트" 섹션이 나타납니다. 자유 텍스트로 항목을 추가하고, 체크박스로 완료/미완료를 전환하거나 삭제할 수 있습니다.
+- 항목 추가 시 🔁 버튼을 눌러두면 "매일 반복" 항목으로 등록되어, 이후 날짜를 열어볼 때마다 그날의 새 항목으로 자동 복제됩니다(과거 기록은 유지, 날짜별로 개별 체크 상태를 가짐).
+- 체크 완료 시 10점 획득, 체크 해제 시 10점 차감됩니다. 캘린더 최상단 대시보드 카드에서 오늘 완료/전체, 오늘 획득 점수, 누적 총점, 100% 완료한 날짜 수, 연속 달성일(streak)을 확인할 수 있습니다.
+- 체크리스트 데이터는 `checklistItems`라는 별도 IndexedDB 저장소에 저장되며, 설정 화면의 백업 내보내기/가져오기에도 포함됩니다.
 
 ## 비밀번호 안내
 

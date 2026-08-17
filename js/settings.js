@@ -77,12 +77,12 @@
 
   // ===== 데이터 백업 =====
   document.getElementById('export-btn').addEventListener('click', async () => {
-    const [schedules, investments, diaries] = await Promise.all([
-      DB.getAll('schedules'), DB.getAll('investments'), DB.getAll('diaries'),
+    const [schedules, investments, diaries, checklistItems] = await Promise.all([
+      DB.getAll('schedules'), DB.getAll('investments'), DB.getAll('diaries'), DB.getAll('checklistItems'),
     ]);
     const payload = {
-      app: 'personal-tracker-pwa', version: 1, exportedAt: new Date().toISOString(),
-      schedules, investments, diaries,
+      app: 'personal-tracker-pwa', version: 2, exportedAt: new Date().toISOString(),
+      schedules, investments, diaries, checklistItems,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -114,12 +114,14 @@
         schedules: Array.isArray(data.schedules) ? data.schedules.length : 0,
         investments: Array.isArray(data.investments) ? data.investments.length : 0,
         diaries: Array.isArray(data.diaries) ? data.diaries.length : 0,
+        checklistItems: Array.isArray(data.checklistItems) ? data.checklistItems.length : 0,
       };
-      if (!confirm(`백업 파일을 가져올까요?\n일정 ${counts.schedules}개, 투자기록 ${counts.investments}개, 일기 ${counts.diaries}개\n\n기존 데이터는 모두 삭제되고 이 파일 내용으로 대체됩니다.`)) return;
+      if (!confirm(`백업 파일을 가져올까요?\n일정 ${counts.schedules}개, 투자기록 ${counts.investments}개, 일기 ${counts.diaries}개, 체크리스트 ${counts.checklistItems}개\n\n기존 데이터는 모두 삭제되고 이 파일 내용으로 대체됩니다.`)) return;
 
       if (Array.isArray(data.schedules)) { await DB.clear('schedules'); await DB.bulkPut('schedules', data.schedules); }
       if (Array.isArray(data.investments)) { await DB.clear('investments'); await DB.bulkPut('investments', data.investments); }
       if (Array.isArray(data.diaries)) { await DB.clear('diaries'); await DB.bulkPut('diaries', data.diaries); }
+      if (Array.isArray(data.checklistItems)) { await DB.clear('checklistItems'); await DB.bulkPut('checklistItems', data.checklistItems); }
 
       Utils.toast('가져오기를 완료했어요');
     } catch (err) {

@@ -20,6 +20,33 @@
   </header>
 
   <main class="page-content">
+    <div class="dash-card">
+      <div class="dash-row">
+        <div class="dash-tile">
+          <div class="dash-value" id="dash-today-ratio">0/0</div>
+          <div class="dash-label">오늘 완료</div>
+        </div>
+        <div class="dash-tile">
+          <div class="dash-value" id="dash-today-score">+0</div>
+          <div class="dash-label">오늘 획득</div>
+        </div>
+        <div class="dash-tile">
+          <div class="dash-value" id="dash-total-score">0</div>
+          <div class="dash-label">누적 총점</div>
+        </div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-tile">
+          <div class="dash-value" id="dash-perfect-days">0일</div>
+          <div class="dash-label">완료한 일수</div>
+        </div>
+        <div class="dash-tile">
+          <div class="dash-value" id="dash-streak">0일</div>
+          <div class="dash-label">연속 달성 🔥</div>
+        </div>
+      </div>
+    </div>
+
     <div class="cal-nav">
       <button class="cal-nav-btn" id="prev-month" aria-label="이전 달">‹</button>
       <div class="cal-month-label">
@@ -37,6 +64,16 @@
     <div class="day-panel">
       <div class="day-panel-title" id="day-panel-title">일정</div>
       <div class="list" id="day-list"></div>
+    </div>
+
+    <div class="checklist-section">
+      <div class="day-panel-title">✅ 오늘의 할 일 체크리스트</div>
+      <form class="checklist-add-row" id="checklist-form">
+        <input type="text" id="checklist-input" placeholder="할 일을 입력하고 추가" maxlength="80" />
+        <button type="button" class="checklist-repeat-toggle" id="checklist-repeat-toggle" aria-pressed="false" title="매일 반복으로 추가">🔁</button>
+        <button type="submit" class="btn btn-primary btn-sm">추가</button>
+      </form>
+      <div class="list" id="checklist-list"></div>
     </div>
   </main>
 
