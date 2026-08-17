@@ -70,7 +70,12 @@
       <div class="day-panel-title">✅ 오늘의 할 일 체크리스트</div>
       <form class="checklist-add-row" id="checklist-form">
         <input type="text" id="checklist-input" placeholder="할 일을 입력하고 추가" maxlength="80" />
-        <button type="button" class="checklist-repeat-toggle" id="checklist-repeat-toggle" aria-pressed="false" title="매일 반복으로 추가">🔁</button>
+        <select class="checklist-repeat-select" id="checklist-repeat-select" aria-label="반복 주기">
+          <option value="none">반복없음</option>
+          <option value="daily">매일</option>
+          <option value="weekly">매주</option>
+          <option value="monthly">매달</option>
+        </select>
         <button type="submit" class="btn btn-primary btn-sm">추가</button>
       </form>
       <div class="list" id="checklist-list"></div>

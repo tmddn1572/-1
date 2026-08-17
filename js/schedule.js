@@ -8,7 +8,6 @@
   let viewYear, viewMonth; // viewMonth: 0-11
   let selectedDate = Utils.todayStr();
   let editingId = null;
-  let checklistRepeatOn = false;
 
   const monthLabel = document.getElementById('month-label');
   const calGrid = document.getElementById('cal-grid');
@@ -23,7 +22,7 @@
 
   const checklistForm = document.getElementById('checklist-form');
   const checklistInput = document.getElementById('checklist-input');
-  const checklistRepeatToggle = document.getElementById('checklist-repeat-toggle');
+  const checklistRepeatSelect = document.getElementById('checklist-repeat-select');
   const checklistList = document.getElementById('checklist-list');
   const dashTodayRatio = document.getElementById('dash-today-ratio');
   const dashTodayScore = document.getElementById('dash-today-score');
@@ -135,16 +134,22 @@
 
   // ===== 체크리스트 (게이미피케이션) =====
 
-  async function loadChecklist() {
-    allChecklistItems = await DB.getAll('checklistItems');
+  // 예전 버전의 repeatDaily(boolean) 데이터를 repeat 문자열로 읽어올 때 보정
+  function normalizeChecklistItem(it) {
+    if (!it.repeat) it.repeat = it.repeatDaily ? 'daily' : 'none';
+    return it;
   }
 
-  // '매일 반복' 항목의 루트(템플릿)를 찾아 선택한 날짜에 아직 없다면 그 날짜용 인스턴스를 만들어준다.
+  async function loadChecklist() {
+    allChecklistItems = (await DB.getAll('checklistItems')).map(normalizeChecklistItem);
+  }
+
+  // 반복 항목의 루트(템플릿)를 찾아, 선택한 날짜가 반복 주기에 해당하는데 아직 인스턴스가 없으면 만들어준다.
   async function ensureRecurringInstances(dateStr) {
-    const roots = allChecklistItems.filter((it) => it.repeatDaily && it.groupId === it.id);
+    const roots = allChecklistItems.filter((it) => it.repeat !== 'none' && it.groupId === it.id);
     let changed = false;
     for (const root of roots) {
-      if (dateStr < root.date) continue;
+      if (!occursOn(root, dateStr)) continue;
       const exists = allChecklistItems.some((it) => it.groupId === root.id && it.date === dateStr);
       if (!exists) {
         const clone = {
@@ -152,7 +157,7 @@
           date: dateStr,
           text: root.text,
           completed: false,
-          repeatDaily: true,
+          repeat: root.repeat,
           groupId: root.id,
           createdAt: Date.now(),
           completedAt: null,
@@ -229,7 +234,7 @@
     checklistList.innerHTML = items.map((it) => `
       <div class="checklist-item ${it.completed ? 'completed' : ''}" data-id="${it.id}">
         <input type="checkbox" class="checklist-checkbox" ${it.completed ? 'checked' : ''} aria-label="완료 체크" />
-        <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeatDaily ? '<span class="checklist-repeat-badge">🔁</span>' : ''}</div>
+        <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeat !== 'none' ? `<span class="checklist-repeat-badge">🔁 ${REPEAT_LABEL[it.repeat]}</span>` : ''}</div>
         <button type="button" class="checklist-delete" aria-label="삭제">✕</button>
       </div>
     `).join('');
@@ -264,16 +269,15 @@
       .forEach((id2) => bump(document.getElementById(id2)));
   }
 
-  async function addChecklistItem(text) {
+  async function addChecklistItem(text, repeat) {
     const id = Utils.genId();
-    const repeatDaily = checklistRepeatOn;
     const item = {
       id,
       date: selectedDate,
       text,
       completed: false,
-      repeatDaily,
-      groupId: repeatDaily ? id : null,
+      repeat,
+      groupId: repeat !== 'none' ? id : null,
       createdAt: Date.now(),
       completedAt: null,
     };
@@ -294,16 +298,10 @@
     e.preventDefault();
     const text = checklistInput.value.trim();
     if (!text) return;
-    addChecklistItem(text);
+    addChecklistItem(text, checklistRepeatSelect.value);
     checklistInput.value = '';
-    checklistRepeatOn = false;
-    checklistRepeatToggle.setAttribute('aria-pressed', 'false');
+    checklistRepeatSelect.value = 'none';
     checklistInput.focus();
-  });
-
-  checklistRepeatToggle.addEventListener('click', () => {
-    checklistRepeatOn = !checklistRepeatOn;
-    checklistRepeatToggle.setAttribute('aria-pressed', String(checklistRepeatOn));
   });
 
   async function refreshDayChecklist() {

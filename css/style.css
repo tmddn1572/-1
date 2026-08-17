@@ -419,18 +419,12 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--primary); o
 .checklist-section { margin-top: 22px; }
 .checklist-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
 .checklist-add-row input[type="text"] { flex: 1; }
-.checklist-repeat-toggle {
-  width: 44px; height: 46px; flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  font-size: 17px;
-  color: var(--text-tertiary);
-}
-.checklist-repeat-toggle[aria-pressed="true"] {
-  background: var(--primary-tint);
-  border-color: var(--primary);
-  color: var(--primary);
+.checklist-repeat-select {
+  width: 84px; flex-shrink: 0;
+  padding: 0 6px;
+  font-size: 12.5px;
+  text-align: center;
+  text-align-last: center;
 }
 
 .checklist-item {
