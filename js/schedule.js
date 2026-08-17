@@ -289,8 +289,20 @@
   }
 
   async function deleteChecklistItem(id) {
-    await DB.remove('checklistItems', id);
-    allChecklistItems = allChecklistItems.filter((it) => it.id !== id);
+    const item = allChecklistItems.find((it) => it.id === id);
+    if (!item) return;
+
+    if (item.repeat !== 'none' && item.groupId) {
+      if (!confirm('반복 항목입니다. 삭제하면 이 항목의 모든 날짜 기록(완료 표시·점수 포함)이 함께 삭제됩니다. 계속할까요?')) return;
+      const groupIds = allChecklistItems.filter((it) => it.groupId === item.groupId).map((it) => it.id);
+      for (const gid of groupIds) {
+        await DB.remove('checklistItems', gid);
+      }
+      allChecklistItems = allChecklistItems.filter((it) => it.groupId !== item.groupId);
+    } else {
+      await DB.remove('checklistItems', id);
+      allChecklistItems = allChecklistItems.filter((it) => it.id !== id);
+    }
     renderChecklist();
     renderDashboard();
   }
