@@ -27,6 +27,8 @@ CDN에서 `@import`하지 않고 `fonts/PretendardVariable.woff2`(가변 폰트,
 
 아이콘은 이모지 대신 `.icon` 클래스(24×24 viewBox, `stroke-width:2`, round cap/join, `fill:none`)를 붙인 인라인 SVG로 통일했습니다. 색은 `currentColor`를 상속하고 크기는 부모 요소의 `font-size`를 그대로 따라갑니다(1em). 투자 기록의 확신도 별점(★☆)은 아이콘이 아니라 1~5단계를 표시하는 기능성 위젯이라 그대로 유지했습니다.
 
+`theme-color`(각 HTML의 `<head>`, 라이트/다크 모드별로 분리)와 `manifest.json`의 `theme_color`/`background_color`도 디자인의 `--bg` 값과 맞춰뒀습니다. 아이폰 홈 화면에 추가해 실행했을 때 상단 상태 표시줄 색이 예전 파란색 브랜드 컬러로 남아있던 문제를 고친 것입니다.
+
 ## 로컬에서 확인하기
 
 서비스 워커는 `file://`에서 등록되지 않으므로, 로컬 정적 서버로 열어야 합니다.
