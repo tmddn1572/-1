@@ -16,8 +16,14 @@ personal-tracker-pwa/
 ├── service-worker.js     # 오프라인 캐싱
 ├── css/style.css
 ├── js/{utils,db,auth,pwa}.js
-└── icons/                # 홈 화면 아이콘 (PNG)
+├── icons/                # 홈 화면 아이콘 (PNG)
+└── fonts/                # Pretendard Variable 폰트 (로컬 호스팅, 아래 참고)
 ```
+
+## 디자인 / 폰트
+
+블랙 & 화이트 톤의 모던 디자인 시스템을 사용하고, 본문 서체로 [Pretendard](https://github.com/orioncactus/pretendard)를 씁니다.
+CDN에서 `@import`하지 않고 `fonts/PretendardVariable.woff2`(가변 폰트, 약 2MB) 파일을 저장소에 직접 포함해 `css/style.css`에서 로컬 경로로 불러옵니다 — 이 프로젝트의 "외부 API/서버 호출 없음" 원칙을 지키면서도 완전한 오프라인 사용(PWA 캐싱)이 가능하게 하기 위함입니다. 라이선스(SIL OFL 1.1) 전문은 `fonts/PRETENDARD-LICENSE.txt`에 포함되어 있습니다.
 
 ## 로컬에서 확인하기
 
