@@ -113,11 +113,11 @@
   function renderDayPanel() {
     const holidayName = holidayNameOn(selectedDate);
     dayPanelTitle.innerHTML = holidayName
-      ? `${Utils.escapeHtml(Utils.displayDate(selectedDate))} <span class="day-panel-holiday">🎌 ${Utils.escapeHtml(holidayName)}</span>`
+      ? `${Utils.escapeHtml(Utils.displayDate(selectedDate))} <span class="day-panel-holiday"><svg class="icon" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> ${Utils.escapeHtml(holidayName)}</span>`
       : Utils.escapeHtml(Utils.displayDate(selectedDate));
     const items = schedulesOn(selectedDate);
     if (items.length === 0) {
-      dayList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🗓️</div>이 날은 등록된 일정이 없어요.</div>`;
+      dayList.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>이 날은 등록된 일정이 없어요.</div>`;
       return;
     }
     dayList.innerHTML = items.map((s) => `
@@ -127,7 +127,7 @@
           ${s.time ? `<div class="card-time">${Utils.displayTime(s.time)}</div>` : ''}
         </div>
         ${s.memo ? `<div class="card-body">${Utils.escapeHtml(s.memo)}</div>` : ''}
-        ${s.repeat && s.repeat !== 'none' ? `<div class="card-tags"><span class="tag-pill">🔁 ${REPEAT_LABEL[s.repeat]}</span></div>` : ''}
+        ${s.repeat && s.repeat !== 'none' ? `<div class="card-tags"><span class="tag-pill"><svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ${REPEAT_LABEL[s.repeat]}</span></div>` : ''}
       </div>
     `).join('');
 
@@ -235,14 +235,14 @@
   function renderChecklist() {
     const items = checklistItemsOn(selectedDate);
     if (items.length === 0) {
-      checklistList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">✅</div>아직 등록한 할 일이 없어요.</div>`;
+      checklistList.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>아직 등록한 할 일이 없어요.</div>`;
       return;
     }
     checklistList.innerHTML = items.map((it) => `
       <div class="checklist-item ${it.completed ? 'completed' : ''}" data-id="${it.id}">
         <input type="checkbox" class="checklist-checkbox" ${it.completed ? 'checked' : ''} aria-label="완료 체크" />
-        <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeat !== 'none' ? `<span class="checklist-repeat-badge">🔁 ${REPEAT_LABEL[it.repeat]}</span>` : ''}</div>
-        <button type="button" class="checklist-delete" aria-label="삭제">✕</button>
+        <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeat !== 'none' ? `<span class="checklist-repeat-badge"><svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ${REPEAT_LABEL[it.repeat]}</span>` : ''}</div>
+        <button type="button" class="checklist-delete" aria-label="삭제"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
       </div>
     `).join('');
 
@@ -320,10 +320,10 @@
       return;
     }
     const d = Utils.strToDate(selectedDate);
-    let msg = '🔁 매일 반복 항목으로 추가돼요.';
-    if (value === 'weekly') msg = `🔁 매주 ${Utils.WEEKDAYS_KR[d.getDay()]}요일마다 반복 항목으로 추가돼요.`;
-    else if (value === 'monthly') msg = `🔁 매달 ${d.getDate()}일마다 반복 항목으로 추가돼요.`;
-    checklistRepeatHint.textContent = msg;
+    let msg = '<svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> 매일 반복 항목으로 추가돼요.';
+    if (value === 'weekly') msg = `<svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> 매주 ${Utils.WEEKDAYS_KR[d.getDay()]}요일마다 반복 항목으로 추가돼요.`;
+    else if (value === 'monthly') msg = `<svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> 매달 ${d.getDate()}일마다 반복 항목으로 추가돼요.`;
+    checklistRepeatHint.innerHTML = msg;
     checklistRepeatHint.hidden = false;
   }
   checklistRepeatSelect.addEventListener('change', updateChecklistRepeatHint);

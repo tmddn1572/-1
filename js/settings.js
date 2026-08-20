@@ -10,8 +10,8 @@
   function renderPasswordCard() {
     if (Auth.isPasswordSet()) {
       pwCard.innerHTML = `
-        <button type="button" class="settings-row" id="change-pw-btn"><span>비밀번호 변경</span><span>›</span></button>
-        <button type="button" class="settings-row" id="reset-pw-btn"><span style="color:var(--danger)">비밀번호 초기화</span><span>›</span></button>
+        <button type="button" class="settings-row" id="change-pw-btn"><span>비밀번호 변경</span><span><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span></button>
+        <button type="button" class="settings-row" id="reset-pw-btn"><span style="color:var(--danger)">비밀번호 초기화</span><span><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span></button>
       `;
       document.getElementById('change-pw-btn').addEventListener('click', () => openPwModal('change'));
       document.getElementById('reset-pw-btn').addEventListener('click', resetFlow);
@@ -19,7 +19,7 @@
       pwCard.innerHTML = `
         <button type="button" class="settings-row" id="setup-pw-btn">
           <span>비밀번호 설정<div class="settings-row-desc">투자 기록 · 일기 잠금에 사용할 비밀번호를 만들어요</div></span>
-          <span>›</span>
+          <span><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
         </button>
       `;
       document.getElementById('setup-pw-btn').addEventListener('click', () => openPwModal('setup'));

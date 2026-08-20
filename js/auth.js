@@ -79,9 +79,9 @@ const Auth = (() => {
 
     function renderSetup() {
       gateEl.innerHTML = `
-        <a href="index.html" class="lock-back" aria-label="홈으로">←</a>
+        <a href="index.html" class="lock-back" aria-label="홈으로"><svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
         <div class="lock-screen">
-          <div class="lock-icon">🔒</div>
+          <div class="lock-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
           <h2>비밀번호 최초 설정</h2>
           <p class="lock-desc">투자 기록과 일기에 공통으로 사용할 비밀번호를 설정하세요.</p>
           <form id="setup-form" class="lock-form">
@@ -110,9 +110,9 @@ const Auth = (() => {
 
     function renderLogin() {
       gateEl.innerHTML = `
-        <a href="index.html" class="lock-back" aria-label="홈으로">←</a>
+        <a href="index.html" class="lock-back" aria-label="홈으로"><svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
         <div class="lock-screen">
-          <div class="lock-icon">🔒</div>
+          <div class="lock-icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
           <h2>비밀번호 입력</h2>
           <p class="lock-desc">투자 기록 · 일기 잠금을 해제하세요.</p>
           <form id="login-form" class="lock-form">

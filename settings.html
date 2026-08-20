@@ -16,7 +16,7 @@
 <body class="no-tabbar">
   <header class="appbar">
     <div class="appbar-left">
-      <a href="index.html" class="appbar-action" aria-label="뒤로">←</a>
+      <a href="index.html" class="appbar-action" aria-label="뒤로"><svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
       <span class="appbar-title">설정</span>
     </div>
   </header>
@@ -33,11 +33,11 @@
       <div class="settings-card">
         <button type="button" class="settings-row" id="export-btn">
           <span>백업 파일 내보내기<div class="settings-row-desc">일정 · 투자 기록 · 일기를 JSON 파일로 저장</div></span>
-          <span>›</span>
+          <span><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
         </button>
         <button type="button" class="settings-row" id="import-btn">
           <span>백업 파일 가져오기<div class="settings-row-desc">내보낸 JSON 파일로 데이터를 복원 (기존 데이터 덮어씀)</div></span>
-          <span>›</span>
+          <span><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
         </button>
       </div>
       <input type="file" id="import-file" accept="application/json" hidden />
@@ -59,7 +59,7 @@
       <div class="modal-handle"></div>
       <div class="modal-header">
         <h2 id="pw-modal-title">비밀번호 설정</h2>
-        <button class="modal-close" id="pw-modal-close">✕</button>
+        <button class="modal-close" id="pw-modal-close"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="modal-body">
         <form id="pw-form">

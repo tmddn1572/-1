@@ -25,6 +25,8 @@ personal-tracker-pwa/
 블랙 & 화이트 톤의 모던 디자인 시스템을 사용하고, 본문 서체로 [Pretendard](https://github.com/orioncactus/pretendard)를 씁니다.
 CDN에서 `@import`하지 않고 `fonts/PretendardVariable.woff2`(가변 폰트, 약 2MB) 파일을 저장소에 직접 포함해 `css/style.css`에서 로컬 경로로 불러옵니다 — 이 프로젝트의 "외부 API/서버 호출 없음" 원칙을 지키면서도 완전한 오프라인 사용(PWA 캐싱)이 가능하게 하기 위함입니다. 라이선스(SIL OFL 1.1) 전문은 `fonts/PRETENDARD-LICENSE.txt`에 포함되어 있습니다.
 
+아이콘은 이모지 대신 `.icon` 클래스(24×24 viewBox, `stroke-width:2`, round cap/join, `fill:none`)를 붙인 인라인 SVG로 통일했습니다. 색은 `currentColor`를 상속하고 크기는 부모 요소의 `font-size`를 그대로 따라갑니다(1em). 투자 기록의 확신도 별점(★☆)은 아이콘이 아니라 1~5단계를 표시하는 기능성 위젯이라 그대로 유지했습니다.
+
 ## 로컬에서 확인하기
 
 서비스 워커는 `file://`에서 등록되지 않으므로, 로컬 정적 서버로 열어야 합니다.

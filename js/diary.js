@@ -22,7 +22,7 @@
   function renderList() {
     const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
     if (sorted.length === 0) {
-      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📔</div>아직 작성한 일기가 없어요. + 버튼으로 오늘을 기록해보세요.</div>`;
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>아직 작성한 일기가 없어요. + 버튼으로 오늘을 기록해보세요.</div>`;
       return;
     }
     listEl.innerHTML = sorted.map((e) => {

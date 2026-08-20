@@ -47,7 +47,7 @@
   function renderList() {
     const items = filteredSorted();
     if (items.length === 0) {
-      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💹</div>${records.length === 0 ? '아직 기록이 없어요. + 버튼으로 추가해보세요.' : '조건에 맞는 기록이 없어요.'}</div>`;
+      listEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg class="icon" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>${records.length === 0 ? '아직 기록이 없어요. + 버튼으로 추가해보세요.' : '조건에 맞는 기록이 없어요.'}</div>`;
       return;
     }
     listEl.innerHTML = items.map((r) => {
