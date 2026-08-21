@@ -528,3 +528,71 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--text); outl
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* ===== 일정 하위 체크리스트 ===== */
+.subtask-toggle-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%;
+  font-size: 13.5px; font-weight: 600; color: var(--text-secondary);
+  padding: 10px 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+.subtask-toggle-btn:active { background: var(--surface-2); }
+
+.subtask-section label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.subtask-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.subtask-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+}
+.subtask-checkbox { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--text); border-radius: 6px; }
+.subtask-text { flex: 1; font-size: 13.5px; word-break: break-word; }
+.subtask-item.completed .subtask-text { color: var(--text-tertiary); text-decoration: line-through; }
+.subtask-delete {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.subtask-delete:active { background: var(--surface); color: var(--danger); }
+.subtask-add-row { display: flex; gap: 8px; }
+.subtask-add-row input[type="text"] { flex: 1; }
+
+/* 일정 카드의 하위 체크리스트 진행률 */
+.card-progress { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.card-progress-bar { flex: 1; height: 4px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.card-progress-fill { height: 100%; background: var(--text); border-radius: 999px; }
+.card-progress-fill.complete { background: var(--success); }
+.card-progress-label { font-size: 11.5px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+
+/* ===== D-day ===== */
+.dday-section { margin-bottom: 16px; }
+.dday-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.dday-heading { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+.dday-add-btn { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 14px; }
+.dday-add-btn:active { background: var(--surface-2); }
+
+.dday-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.dday-empty { font-size: 12.5px; color: var(--text-tertiary); padding: 10px 2px; }
+.dday-chip {
+  flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  min-width: 88px;
+  box-shadow: var(--shadow);
+}
+.dday-chip.today { background: var(--primary); border-color: var(--primary); }
+.dday-chip.today .dday-chip-value, .dday-chip.today .dday-chip-title { color: var(--bg); }
+.dday-chip.past { opacity: 0.5; }
+.dday-chip-value { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+.dday-chip-title {
+  font-size: 11.5px; color: var(--text-secondary);
+  max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}

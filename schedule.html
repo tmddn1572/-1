@@ -21,6 +21,14 @@
   </header>
 
   <main class="page-content">
+    <div class="dday-section">
+      <div class="dday-header">
+        <span class="dday-heading"><svg class="icon" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> D-day</span>
+        <button type="button" class="dday-add-btn" id="dday-add-btn" aria-label="D-day 추가"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+      <div class="dday-scroll" id="dday-scroll"></div>
+    </div>
+
     <div class="dash-card">
       <div class="dash-row">
         <div class="dash-tile">
@@ -132,11 +140,52 @@
             <label for="f-memo">메모</label>
             <textarea id="f-memo" placeholder="메모 (선택)"></textarea>
           </div>
+          <div class="field">
+            <button type="button" class="subtask-toggle-btn" id="subtask-toggle-btn">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              체크리스트 추가
+            </button>
+            <div class="subtask-section hidden" id="subtask-section">
+              <label>하위 체크리스트</label>
+              <div class="subtask-list" id="subtask-list"></div>
+              <div class="subtask-add-row">
+                <input type="text" id="subtask-input" placeholder="할 일을 입력하고 추가" maxlength="80" />
+                <button type="button" class="btn btn-secondary btn-sm" id="subtask-add-btn" aria-label="하위 항목 추가"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger hidden" id="delete-btn">삭제</button>
         <button type="submit" form="schedule-form" class="btn btn-primary">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- D-day 등록/수정 모달 -->
+  <div class="modal-overlay" id="dday-modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <h2 id="dday-modal-title">D-day 추가</h2>
+        <button class="modal-close" id="dday-modal-close"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <form id="dday-form">
+          <div class="field">
+            <label for="f-dday-title">목표 이름</label>
+            <input type="text" id="f-dday-title" required placeholder="예: 수능" maxlength="40" />
+          </div>
+          <div class="field">
+            <label for="f-dday-date">목표 날짜</label>
+            <input type="date" id="f-dday-date" required />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger hidden" id="dday-delete-btn">삭제</button>
+        <button type="submit" form="dday-form" class="btn btn-primary">저장</button>
       </div>
     </div>
   </div>

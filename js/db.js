@@ -1,7 +1,7 @@
 // IndexedDB 래퍼 (schedules / investments / diaries 저장소)
 const DB = (() => {
   const DB_NAME = 'personal-tracker-db';
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
   let dbPromise = null;
 
   function openDB() {
@@ -24,6 +24,10 @@ const DB = (() => {
         }
         if (!db.objectStoreNames.contains('checklistItems')) {
           const s = db.createObjectStore('checklistItems', { keyPath: 'id' });
+          s.createIndex('date', 'date', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('ddays')) {
+          const s = db.createObjectStore('ddays', { keyPath: 'id' });
           s.createIndex('date', 'date', { unique: false });
         }
       };

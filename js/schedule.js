@@ -5,9 +5,12 @@
 
   let allSchedules = [];
   let allChecklistItems = [];
+  let allDdays = [];
   let viewYear, viewMonth; // viewMonth: 0-11
   let selectedDate = Utils.todayStr();
   let editingId = null;
+  let currentSubtasks = [];
+  let editingDdayId = null;
 
   const monthLabel = document.getElementById('month-label');
   const calGrid = document.getElementById('cal-grid');
@@ -30,6 +33,19 @@
   const dashTotalScore = document.getElementById('dash-total-score');
   const dashPerfectDays = document.getElementById('dash-perfect-days');
   const dashStreak = document.getElementById('dash-streak');
+
+  const subtaskToggleBtn = document.getElementById('subtask-toggle-btn');
+  const subtaskSection = document.getElementById('subtask-section');
+  const subtaskList = document.getElementById('subtask-list');
+  const subtaskInput = document.getElementById('subtask-input');
+  const subtaskAddBtn = document.getElementById('subtask-add-btn');
+
+  const ddayScroll = document.getElementById('dday-scroll');
+  const ddayAddBtn = document.getElementById('dday-add-btn');
+  const ddayModalOverlay = document.getElementById('dday-modal-overlay');
+  const ddayModalClose = document.getElementById('dday-modal-close');
+  const ddayForm = document.getElementById('dday-form');
+  const ddayDeleteBtn = document.getElementById('dday-delete-btn');
 
   function occursOn(schedule, dateStr) {
     if (dateStr < schedule.date) return false;
@@ -128,6 +144,7 @@
         </div>
         ${s.memo ? `<div class="card-body">${Utils.escapeHtml(s.memo)}</div>` : ''}
         ${s.repeat && s.repeat !== 'none' ? `<div class="card-tags"><span class="tag-pill"><svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ${REPEAT_LABEL[s.repeat]}</span></div>` : ''}
+        ${subtaskProgressHtml(s.subtasks)}
       </div>
     `).join('');
 
@@ -138,6 +155,164 @@
       });
     });
   }
+
+  // ===== 일정 하위 체크리스트 =====
+
+  function subtaskProgressHtml(subtasks) {
+    if (!Array.isArray(subtasks) || subtasks.length === 0) return '';
+    const total = subtasks.length;
+    const completed = subtasks.filter((t) => t.completed).length;
+    const pct = Math.round((completed / total) * 100);
+    const isComplete = completed === total;
+    return `
+      <div class="card-progress">
+        <div class="card-progress-bar"><div class="card-progress-fill ${isComplete ? 'complete' : ''}" style="width:${pct}%"></div></div>
+        <span class="card-progress-label">${completed}/${total} 완료</span>
+      </div>`;
+  }
+
+  function renderSubtasks() {
+    subtaskList.innerHTML = currentSubtasks.map((t) => `
+      <div class="subtask-item ${t.completed ? 'completed' : ''}" data-id="${t.id}">
+        <input type="checkbox" class="subtask-checkbox" ${t.completed ? 'checked' : ''} aria-label="완료 체크" />
+        <div class="subtask-text">${Utils.escapeHtml(t.text)}</div>
+        <button type="button" class="subtask-delete" aria-label="삭제"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+      </div>
+    `).join('');
+
+    subtaskList.querySelectorAll('.subtask-item').forEach((row) => {
+      const id = row.dataset.id;
+      row.querySelector('.subtask-checkbox').addEventListener('change', (e) => {
+        const t = currentSubtasks.find((x) => x.id === id);
+        if (t) t.completed = e.target.checked;
+        row.classList.toggle('completed', e.target.checked);
+      });
+      row.querySelector('.subtask-delete').addEventListener('click', () => {
+        currentSubtasks = currentSubtasks.filter((x) => x.id !== id);
+        renderSubtasks();
+      });
+    });
+  }
+
+  function revealSubtasks() {
+    subtaskToggleBtn.classList.add('hidden');
+    subtaskSection.classList.remove('hidden');
+  }
+
+  function addSubtaskFromInput() {
+    const text = subtaskInput.value.trim();
+    if (!text) return;
+    currentSubtasks.push({ id: Utils.genId(), text, completed: false });
+    subtaskInput.value = '';
+    subtaskInput.focus();
+    renderSubtasks();
+  }
+
+  subtaskToggleBtn.addEventListener('click', revealSubtasks);
+  subtaskAddBtn.addEventListener('click', addSubtaskFromInput);
+  subtaskInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); addSubtaskFromInput(); }
+  });
+
+  // ===== D-day =====
+
+  async function loadDdays() {
+    allDdays = await DB.getAll('ddays');
+  }
+
+  function ddayDiffDays(dateStr) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    return Math.round((Utils.strToDate(dateStr) - Utils.strToDate(Utils.todayStr())) / msPerDay);
+  }
+
+  function ddayLabel(diff) {
+    if (diff === 0) return 'D-DAY';
+    return diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`;
+  }
+
+  function sortedDdays() {
+    return [...allDdays].sort((a, b) => {
+      const da = ddayDiffDays(a.date);
+      const db_ = ddayDiffDays(b.date);
+      const aPast = da < 0, bPast = db_ < 0;
+      if (aPast !== bPast) return aPast ? 1 : -1;
+      return aPast ? db_ - da : da - db_;
+    });
+  }
+
+  function renderDdays() {
+    const items = sortedDdays();
+    if (items.length === 0) {
+      ddayScroll.innerHTML = '<span class="dday-empty">등록된 D-day가 없어요</span>';
+      return;
+    }
+    ddayScroll.innerHTML = items.map((d) => {
+      const diff = ddayDiffDays(d.date);
+      const classes = ['dday-chip'];
+      if (diff === 0) classes.push('today');
+      if (diff < 0) classes.push('past');
+      return `
+        <button type="button" class="${classes.join(' ')}" data-id="${d.id}">
+          <span class="dday-chip-value">${ddayLabel(diff)}</span>
+          <span class="dday-chip-title">${Utils.escapeHtml(d.title)}</span>
+        </button>`;
+    }).join('');
+
+    ddayScroll.querySelectorAll('.dday-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const d = allDdays.find((x) => x.id === chip.dataset.id);
+        if (d) openDdayModal(d);
+      });
+    });
+  }
+
+  function openDdayModal(dday) {
+    editingDdayId = dday ? dday.id : null;
+    document.getElementById('dday-modal-title').textContent = dday ? 'D-day 수정' : 'D-day 추가';
+    ddayDeleteBtn.classList.toggle('hidden', !dday);
+    document.getElementById('f-dday-title').value = dday ? dday.title : '';
+    document.getElementById('f-dday-date').value = dday ? dday.date : Utils.todayStr();
+    ddayModalOverlay.classList.add('open');
+  }
+
+  function closeDdayModal() {
+    ddayModalOverlay.classList.remove('open');
+    ddayForm.reset();
+    editingDdayId = null;
+  }
+
+  ddayAddBtn.addEventListener('click', () => openDdayModal(null));
+  ddayModalClose.addEventListener('click', closeDdayModal);
+  ddayModalOverlay.addEventListener('click', (e) => { if (e.target === ddayModalOverlay) closeDdayModal(); });
+
+  ddayForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('f-dday-title').value.trim();
+    const date = document.getElementById('f-dday-date').value;
+    if (!title || !date) return;
+
+    const existing = editingDdayId ? allDdays.find((d) => d.id === editingDdayId) : null;
+    const obj = {
+      id: editingDdayId || Utils.genId(),
+      title, date,
+      createdAt: existing ? existing.createdAt : Date.now(),
+    };
+    await DB.put('ddays', obj);
+    await loadDdays();
+    renderDdays();
+    closeDdayModal();
+    Utils.toast('저장했어요');
+  });
+
+  ddayDeleteBtn.addEventListener('click', async () => {
+    if (!editingDdayId) return;
+    if (!confirm('이 D-day를 삭제할까요?')) return;
+    await DB.remove('ddays', editingDdayId);
+    await loadDdays();
+    renderDdays();
+    closeDdayModal();
+    Utils.toast('삭제했어요');
+  });
 
   // ===== 체크리스트 (게이미피케이션) =====
 
@@ -366,6 +541,13 @@
     document.getElementById('f-time').value = schedule ? (schedule.time || '') : '';
     document.getElementById('f-memo').value = schedule ? (schedule.memo || '') : '';
     setRepeatValue(schedule ? (schedule.repeat || 'none') : 'none');
+
+    currentSubtasks = (schedule && Array.isArray(schedule.subtasks)) ? schedule.subtasks.map((t) => ({ ...t })) : [];
+    renderSubtasks();
+    const hasSubtasks = currentSubtasks.length > 0;
+    subtaskToggleBtn.classList.toggle('hidden', hasSubtasks);
+    subtaskSection.classList.toggle('hidden', !hasSubtasks);
+
     modalOverlay.classList.add('open');
   }
 
@@ -373,6 +555,9 @@
     modalOverlay.classList.remove('open');
     form.reset();
     editingId = null;
+    currentSubtasks = [];
+    subtaskToggleBtn.classList.remove('hidden');
+    subtaskSection.classList.add('hidden');
   }
 
   document.getElementById('add-btn').addEventListener('click', () => openModal(null));
@@ -391,6 +576,7 @@
     const obj = {
       id: editingId || Utils.genId(),
       title, date, time, memo, repeat,
+      subtasks: currentSubtasks,
       createdAt: editingId ? (allSchedules.find((s) => s.id === editingId)?.createdAt || Date.now()) : Date.now(),
     };
     await DB.put('schedules', obj);
@@ -443,6 +629,8 @@
     viewMonth = now.getMonth();
     await loadAll();
     await loadChecklist();
+    await loadDdays();
+    renderDdays();
     renderCalendar();
     renderDayPanel();
     await refreshDayChecklist();
