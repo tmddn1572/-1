@@ -11,6 +11,7 @@
   let editingId = null;
   let currentSubtasks = [];
   let editingDdayId = null;
+  const expandedChecklistIds = new Set(); // "체크리스트 추가"를 눌러 하위 항목 UI를 펼친 항목의 id
 
   const monthLabel = document.getElementById('month-label');
   const calGrid = document.getElementById('cal-grid');
@@ -36,9 +37,6 @@
 
   const subtaskToggleBtn = document.getElementById('subtask-toggle-btn');
   const subtaskSection = document.getElementById('subtask-section');
-  const subtaskList = document.getElementById('subtask-list');
-  const subtaskInput = document.getElementById('subtask-input');
-  const subtaskAddBtn = document.getElementById('subtask-add-btn');
 
   const ddayScroll = document.getElementById('dday-scroll');
   const ddayAddBtn = document.getElementById('dday-add-btn');
@@ -156,62 +154,103 @@
     });
   }
 
-  // ===== 일정 하위 체크리스트 =====
+  // ===== 하위 체크리스트 (일정 · 오늘의 할 일 공용 컴포넌트) =====
+  // subtask 객체: { id, text, done, time(선택, null 허용) }
+  // 예전에 저장된 { completed } 필드도 읽을 때 done으로 보정해준다.
+
+  function normalizeSubtasks(subtasks) {
+    if (!Array.isArray(subtasks)) return [];
+    return subtasks.map((t) => ({
+      id: t.id || Utils.genId(),
+      text: t.text || '',
+      done: typeof t.done === 'boolean' ? t.done : !!t.completed,
+      time: t.time || null,
+    }));
+  }
 
   function subtaskProgressHtml(subtasks) {
-    if (!Array.isArray(subtasks) || subtasks.length === 0) return '';
-    const total = subtasks.length;
-    const completed = subtasks.filter((t) => t.completed).length;
-    const pct = Math.round((completed / total) * 100);
-    const isComplete = completed === total;
+    const list = normalizeSubtasks(subtasks);
+    if (list.length === 0) return '';
+    const total = list.length;
+    const done = list.filter((t) => t.done).length;
+    const pct = Math.round((done / total) * 100);
     return `
       <div class="card-progress">
-        <div class="card-progress-bar"><div class="card-progress-fill ${isComplete ? 'complete' : ''}" style="width:${pct}%"></div></div>
-        <span class="card-progress-label">${completed}/${total} 완료</span>
+        <div class="card-progress-bar"><div class="card-progress-fill ${done === total ? 'complete' : ''}" style="width:${pct}%"></div></div>
+        <span class="card-progress-label">${done}/${total} 완료</span>
       </div>`;
   }
 
-  function renderSubtasks() {
-    subtaskList.innerHTML = currentSubtasks.map((t) => `
-      <div class="subtask-item ${t.completed ? 'completed' : ''}" data-id="${t.id}">
-        <input type="checkbox" class="subtask-checkbox" ${t.completed ? 'checked' : ''} aria-label="완료 체크" />
-        <div class="subtask-text">${Utils.escapeHtml(t.text)}</div>
+  function subtaskListHtml(subtasks) {
+    return normalizeSubtasks(subtasks).map((t) => `
+      <div class="subtask-item ${t.done ? 'completed' : ''}" data-id="${t.id}">
+        <input type="checkbox" class="subtask-checkbox" ${t.done ? 'checked' : ''} aria-label="완료 체크" />
+        <div class="subtask-text">${Utils.escapeHtml(t.text)}${t.time ? `<span class="subtask-time">· ${Utils.displayTime(t.time)}</span>` : ''}</div>
         <button type="button" class="subtask-delete" aria-label="삭제"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
       </div>
     `).join('');
-
-    subtaskList.querySelectorAll('.subtask-item').forEach((row) => {
-      const id = row.dataset.id;
-      row.querySelector('.subtask-checkbox').addEventListener('change', (e) => {
-        const t = currentSubtasks.find((x) => x.id === id);
-        if (t) t.completed = e.target.checked;
-        row.classList.toggle('completed', e.target.checked);
-      });
-      row.querySelector('.subtask-delete').addEventListener('click', () => {
-        currentSubtasks = currentSubtasks.filter((x) => x.id !== id);
-        renderSubtasks();
-      });
-    });
   }
 
-  function revealSubtasks() {
+  // sectionEl 안의 .subtask-list / .subtask-input / .subtask-time-input / .subtask-add-btn 을 찾아
+  // getList/setList로 주입받은 데이터에 대해 체크/삭제/추가를 바인딩한다.
+  // 일정 모달(메모리 버퍼, 저장 시 한 번에 반영)과 오늘의 할 일(항목마다 즉시 저장) 양쪽에서 재사용.
+  function bindSubtaskSection(sectionEl, { getList, setList, onChange }) {
+    const listEl = sectionEl.querySelector('.subtask-list');
+    const textInput = sectionEl.querySelector('.subtask-input');
+    const timeInput = sectionEl.querySelector('.subtask-time-input');
+    const addBtn = sectionEl.querySelector('.subtask-add-btn');
+
+    function paint() {
+      listEl.innerHTML = subtaskListHtml(getList());
+      listEl.querySelectorAll('.subtask-item').forEach((row) => {
+        const id = row.dataset.id;
+        row.querySelector('.subtask-checkbox').addEventListener('change', (e) => {
+          const list = normalizeSubtasks(getList());
+          const t = list.find((x) => x.id === id);
+          if (t) t.done = e.target.checked;
+          setList(list);
+          row.classList.toggle('completed', e.target.checked);
+          if (onChange) onChange();
+        });
+        row.querySelector('.subtask-delete').addEventListener('click', () => {
+          setList(normalizeSubtasks(getList()).filter((x) => x.id !== id));
+          paint();
+          if (onChange) onChange();
+        });
+      });
+    }
+
+    function addFromInputs() {
+      const text = textInput.value.trim();
+      if (!text) return;
+      const list = normalizeSubtasks(getList());
+      list.push({ id: Utils.genId(), text, done: false, time: timeInput.value || null });
+      setList(list);
+      textInput.value = '';
+      timeInput.value = '';
+      textInput.focus();
+      paint();
+      if (onChange) onChange();
+    }
+
+    addBtn.addEventListener('click', addFromInputs);
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addFromInputs(); }
+    });
+
+    paint();
+    return { repaint: paint };
+  }
+
+  // ----- 일정 모달용 바인딩 -----
+  const scheduleSubtasks = bindSubtaskSection(subtaskSection, {
+    getList: () => currentSubtasks,
+    setList: (arr) => { currentSubtasks = arr; },
+  });
+
+  subtaskToggleBtn.addEventListener('click', () => {
     subtaskToggleBtn.classList.add('hidden');
     subtaskSection.classList.remove('hidden');
-  }
-
-  function addSubtaskFromInput() {
-    const text = subtaskInput.value.trim();
-    if (!text) return;
-    currentSubtasks.push({ id: Utils.genId(), text, completed: false });
-    subtaskInput.value = '';
-    subtaskInput.focus();
-    renderSubtasks();
-  }
-
-  subtaskToggleBtn.addEventListener('click', revealSubtasks);
-  subtaskAddBtn.addEventListener('click', addSubtaskFromInput);
-  subtaskInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); addSubtaskFromInput(); }
   });
 
   // ===== D-day =====
@@ -407,24 +446,71 @@
     dashStreak.textContent = `${streak}일`;
   }
 
+  function subtaskSectionFragmentHtml() {
+    return `
+      <div class="subtask-section subtask-section-inline" data-role="subtask-section">
+        <div class="subtask-list"></div>
+        <div class="subtask-add-row">
+          <input type="text" class="subtask-input" placeholder="할 일을 입력하고 추가" maxlength="60" />
+          <input type="time" class="subtask-time-input" aria-label="시간 (선택)" />
+          <button type="button" class="btn btn-secondary btn-sm subtask-add-btn" aria-label="하위 항목 추가"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        </div>
+      </div>`;
+  }
+
+  function bindChecklistItemSubtasks(sectionEl, item, unit) {
+    bindSubtaskSection(sectionEl, {
+      getList: () => normalizeSubtasks(item.subtasks),
+      setList: (arr) => { item.subtasks = arr; DB.put('checklistItems', item); },
+      onChange: () => {
+        unit.querySelector('.card-progress-slot').innerHTML = subtaskProgressHtml(item.subtasks);
+      },
+    });
+  }
+
+  function checklistUnitHtml(it) {
+    const hasSubtasks = normalizeSubtasks(it.subtasks).length > 0;
+    const revealed = hasSubtasks || expandedChecklistIds.has(it.id);
+    return `
+      <div class="checklist-unit" data-id="${it.id}">
+        <div class="checklist-item ${it.completed ? 'completed' : ''}">
+          <input type="checkbox" class="checklist-checkbox" ${it.completed ? 'checked' : ''} aria-label="완료 체크" />
+          <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeat !== 'none' ? `<span class="checklist-repeat-badge"><svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ${REPEAT_LABEL[it.repeat]}</span>` : ''}</div>
+          <button type="button" class="checklist-delete" aria-label="삭제"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+        </div>
+        <div class="card-progress-slot">${subtaskProgressHtml(it.subtasks)}</div>
+        ${revealed ? subtaskSectionFragmentHtml() : `<button type="button" class="subtask-toggle-btn subtask-toggle-btn-inline" data-role="reveal-subtasks"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 체크리스트 추가</button>`}
+      </div>`;
+  }
+
   function renderChecklist() {
     const items = checklistItemsOn(selectedDate);
     if (items.length === 0) {
       checklistList.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>아직 등록한 할 일이 없어요.</div>`;
       return;
     }
-    checklistList.innerHTML = items.map((it) => `
-      <div class="checklist-item ${it.completed ? 'completed' : ''}" data-id="${it.id}">
-        <input type="checkbox" class="checklist-checkbox" ${it.completed ? 'checked' : ''} aria-label="완료 체크" />
-        <div class="checklist-text">${Utils.escapeHtml(it.text)}${it.repeat !== 'none' ? `<span class="checklist-repeat-badge"><svg class="icon" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ${REPEAT_LABEL[it.repeat]}</span>` : ''}</div>
-        <button type="button" class="checklist-delete" aria-label="삭제"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
-      </div>
-    `).join('');
+    checklistList.innerHTML = items.map(checklistUnitHtml).join('');
 
-    checklistList.querySelectorAll('.checklist-item').forEach((row) => {
-      const id = row.dataset.id;
+    checklistList.querySelectorAll('.checklist-unit').forEach((unit) => {
+      const id = unit.dataset.id;
+      const item = allChecklistItems.find((x) => x.id === id);
+      if (!item) return;
+
+      const row = unit.querySelector('.checklist-item');
       row.querySelector('.checklist-checkbox').addEventListener('change', (e) => toggleChecklistItem(id, row, e.target.checked));
       row.querySelector('.checklist-delete').addEventListener('click', () => deleteChecklistItem(id));
+
+      const revealBtn = unit.querySelector('[data-role="reveal-subtasks"]');
+      if (revealBtn) {
+        revealBtn.addEventListener('click', () => {
+          expandedChecklistIds.add(id);
+          revealBtn.remove();
+          unit.insertAdjacentHTML('beforeend', subtaskSectionFragmentHtml());
+          bindChecklistItemSubtasks(unit.querySelector('[data-role="subtask-section"]'), item, unit);
+        });
+      } else {
+        bindChecklistItemSubtasks(unit.querySelector('[data-role="subtask-section"]'), item, unit);
+      }
     });
   }
 
@@ -542,8 +628,8 @@
     document.getElementById('f-memo').value = schedule ? (schedule.memo || '') : '';
     setRepeatValue(schedule ? (schedule.repeat || 'none') : 'none');
 
-    currentSubtasks = (schedule && Array.isArray(schedule.subtasks)) ? schedule.subtasks.map((t) => ({ ...t })) : [];
-    renderSubtasks();
+    currentSubtasks = normalizeSubtasks(schedule && schedule.subtasks);
+    scheduleSubtasks.repaint();
     const hasSubtasks = currentSubtasks.length > 0;
     subtaskToggleBtn.classList.toggle('hidden', hasSubtasks);
     subtaskSection.classList.toggle('hidden', !hasSubtasks);

@@ -551,6 +551,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--text); outl
 .subtask-checkbox { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--text); border-radius: 6px; }
 .subtask-text { flex: 1; font-size: 13.5px; word-break: break-word; }
 .subtask-item.completed .subtask-text { color: var(--text-tertiary); text-decoration: line-through; }
+.subtask-time { font-size: 11.5px; font-weight: 600; color: var(--text-tertiary); margin-left: 4px; white-space: nowrap; }
 .subtask-delete {
   width: 26px; height: 26px; flex-shrink: 0;
   border-radius: 50%;
@@ -560,14 +561,20 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--text); outl
 }
 .subtask-delete:active { background: var(--surface); color: var(--danger); }
 .subtask-add-row { display: flex; gap: 8px; }
-.subtask-add-row input[type="text"] { flex: 1; }
+.subtask-add-row input[type="text"] { flex: 1; min-width: 0; }
+.subtask-add-row input[type="time"] { flex-shrink: 0; width: 108px; padding-left: 8px; padding-right: 8px; font-size: 13px; }
 
-/* 일정 카드의 하위 체크리스트 진행률 */
+/* 진행률 표시 (일정 카드 · 오늘의 할 일 항목 공용) */
 .card-progress { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .card-progress-bar { flex: 1; height: 4px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
 .card-progress-fill { height: 100%; background: var(--text); border-radius: 999px; }
 .card-progress-fill.complete { background: var(--success); }
 .card-progress-label { font-size: 11.5px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+
+/* '오늘의 할 일' 항목에 중첩되는 인라인 하위 체크리스트 (일정 모달과 같은 컴포넌트 재사용) */
+.checklist-unit { display: flex; flex-direction: column; gap: 8px; }
+.subtask-toggle-btn-inline { padding: 8px 10px; font-size: 12.5px; }
+.subtask-section-inline .subtask-item { background: var(--surface); }
 
 /* ===== D-day ===== */
 .dday-section { margin-bottom: 16px; }

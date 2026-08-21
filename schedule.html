@@ -147,10 +147,11 @@
             </button>
             <div class="subtask-section hidden" id="subtask-section">
               <label>하위 체크리스트</label>
-              <div class="subtask-list" id="subtask-list"></div>
+              <div class="subtask-list"></div>
               <div class="subtask-add-row">
-                <input type="text" id="subtask-input" placeholder="할 일을 입력하고 추가" maxlength="80" />
-                <button type="button" class="btn btn-secondary btn-sm" id="subtask-add-btn" aria-label="하위 항목 추가"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                <input type="text" class="subtask-input" placeholder="할 일을 입력하고 추가" maxlength="80" />
+                <input type="time" class="subtask-time-input" aria-label="시간 (선택)" />
+                <button type="button" class="btn btn-secondary btn-sm subtask-add-btn" aria-label="하위 항목 추가"><svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
               </div>
             </div>
           </div>
